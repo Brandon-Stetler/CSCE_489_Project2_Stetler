@@ -1,4 +1,3 @@
-#include <pthread.h>
 #include "Semaphore.h"
 
 
@@ -34,6 +33,12 @@ Semaphore::~Semaphore() {
  *************************************************************************************/
 
 void Semaphore::wait() {
+    pthread_mutex_lock(&mutex); // lock mutex
+    while (count == 0) { // when no resources are available...
+        pthread_cond_wait(&cond, &mutex); //block this thread, releasing mutex until signal
+    }
+    --count; // consume one resource
+    pthread_mutex_unlock(&mutex); // release mutex
 
 }
 
@@ -44,6 +49,10 @@ void Semaphore::wait() {
  *************************************************************************************/
 
 void Semaphore::signal() {
+    pthread_mutex_lock(&mutex); // lock mutex to modify count safely
+    ++count; // put one resource back
+    pthread_cond_signal(&cond); // wake up one blocked thread, if present
+    pthread_mutex_unlock(&mutex); // release mutex
 
 }
 
