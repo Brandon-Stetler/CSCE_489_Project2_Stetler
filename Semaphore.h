@@ -7,7 +7,7 @@
 class Semaphore 
 {
 public:
-	// Counstructor that initializes semaphore count and associated pthread objects
+	// Constructor that initializes semaphore count and associated pthread objects
 	Semaphore(int count = 0); 
 
 	// Destructor that cleans up pthread objects

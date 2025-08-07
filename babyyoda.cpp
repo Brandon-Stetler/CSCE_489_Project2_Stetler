@@ -40,14 +40,12 @@ void *producer_routine(void *data) {
 
 	int max_items = *((int *)data); // total items to produce, from argument array
 	int buffer_size = *((int *)data +1); // buffer size, from argument array
-	time_t rand_seed;
-	srand((unsigned int) time(&rand_seed));
+	time_t rand_seed; // set random time seed
+	srand((unsigned int) time(&rand_seed)); // get random time number
 
 	// The current Yoda serial number (incremented)
 	int serialnum = 1;
 	
-	// We know the data pointer is an integer that indicates the number to produce
-	// int left_to_produce = *((int *) data);
 
 	// Loop through the amount we're going to produce and place into the buffer
 	while (true) {
@@ -80,16 +78,9 @@ void *producer_routine(void *data) {
 		
 		// random sleep but he makes them fast so 1/20 of a second
 		usleep((useconds_t) (rand() % 200000));
-
-		// usleep(rand() % 200000); // sleep 0-200 ms to simulate work
-
-		// printf("   Yoda put on shelf.\n");
-		
-		// Semaphore signal that there are items available
-		//empty->signal();
 	}
 
-		// After all real items are produced, send a sentinel (-1) to all consumers to let them know
+		// After all items are produced, send a sentinel (-1) to all consumers to let them know there will be no more
 		int num_consumers = *((int *)data + 2); // number of consumers from argument array
 		for (int i = 0; i < num_consumers; ++i) {
 			emptySlots->wait(); // wait for an empty slot
@@ -117,9 +108,7 @@ void *consumer_routine(void *data) {
 	ThreadArgs *args = (ThreadArgs *)data; // get the passed-in thread arguments
 	int id = args->id; // store consumer ID
 	int buffer_size = args->buffer_size; // store buffer size
-	// (void) data;
 
-	//bool quitthreads = false;
 
 	while (true) {
 		printf("Consumer %d wants to buy a Yoda...\n", id); // 
@@ -130,7 +119,7 @@ void *consumer_routine(void *data) {
 		// Take an item off the shelf
 		pthread_mutex_lock(&buf_mutex); // lock buffer to remove item
 		int item = buffer[tail]; // read the item at tail
-		int slot = tail; // capture slot BEFORE advancing
+		int slot = tail; // capture slot BEFORE advancing for printing
 		tail = (tail + 1) % buffer_size; // advance tail by one
 
 		pthread_mutex_unlock(&buf_mutex); // unlock buffer
@@ -160,7 +149,7 @@ void *consumer_routine(void *data) {
 
 int main(int argc, const char *argv[]) {
 
-	setvbuf(stdout, NULL, _IONBF, 0); // disable buffering for stdout
+	setvbuf(stdout, NULL, _IONBF, 0); // disable buffering for stdout to make cleaner output
 
 	// Expect exactly three command-line arguments
 	if (argc != 4) { // if incorrect number of parameters
@@ -173,13 +162,13 @@ int main(int argc, const char *argv[]) {
 	int num_consumers = (int) strtol(argv[2], NULL, 10); // convert second arg to number of consumers
 	int max_items = (int) strtol(argv[3], NULL, 10); // convert third arg to max items to produce
 
-	printf("Producing %d today.\n", max_items);
+	printf("Producing %d today.\n", max_items); // print how many Yodas are going to be produced
 	
 	// Initialize our semaphores
-	emptySlots = new Semaphore(buffer_size);
+	emptySlots = new Semaphore(buffer_size); // entirely empty buffer means we have buffer_size # of slots
 	fullSlots = new Semaphore(0); // fullSlots starts empty (no items produced yet)
 
-	pthread_mutex_init(&buf_mutex, NULL); // Initialize our buffer mutex
+	pthread_mutex_init(&buf_mutex, NULL); // initialize our buffer mutex
 	buffer = new int[buffer_size]; // allocate buffer array
 
 	pthread_t producer; // handle for producer thread
@@ -196,7 +185,7 @@ int main(int argc, const char *argv[]) {
 	for (int i = 0; i < num_consumers; ++i) {
 		args[i].id = i + 1; // get id
 		args[i].buffer_size = buffer_size; // get buffer_size
-		pthread_create(&consumer[i], NULL, consumer_routine, &args[i]);
+		pthread_create(&consumer[i], NULL, consumer_routine, &args[i]); // create consumer thread
 	}
 
 	// Wait for our producer thread to finish up
@@ -210,10 +199,6 @@ int main(int argc, const char *argv[]) {
 	//while (id < max_items)
 	//	sleep(1);
 
-	// Now make sure they all exited
-//	for (unsigned int i=0; i<NUM_CONSUMERS; i++) {
-//		pthread_join(consumers[i], NULL);
-//	}
 	for (int i = 0; i < num_consumers; ++i) {
 		pthread_join(consumer[i], NULL);
 	}
