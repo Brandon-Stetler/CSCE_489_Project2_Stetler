@@ -10,8 +10,9 @@
  *
  *************************************************************************************/
 
-Semaphore::Semaphore(int count) {
-
+Semaphore::Semaphore(int count) : count (count) {
+    pthread_mutex_init(&mutex, nullptr); // initialize mutex with default attributes
+    pthread_cond_init(&cond, nullptr); // initialize condition variable with default attributes
 }
 
 
@@ -22,6 +23,8 @@ Semaphore::Semaphore(int count) {
  *************************************************************************************/
 
 Semaphore::~Semaphore() {
+    pthread_mutex_destroy(&mutex); // destroy the mutex
+    pthread_cond_destroy(&cond); // destroy the condition variable
 }
 
 
