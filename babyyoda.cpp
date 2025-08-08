@@ -80,6 +80,10 @@ void *producer_routine(void *data) {
 		usleep((useconds_t) (rand() % 200000));
 	}
 
+		printf("End of producer thread, the manufacturer has completed his work for the day.\n");
+
+		printf("Waiting for consumers to buy up the rest (if there are any).\n");
+
 		// After all items are produced, send a sentinel (-1) to all consumers to let them know there will be no more
 		int num_consumers = *((int *)data + 2); // number of consumers from argument array
 		for (int i = 0; i < num_consumers; ++i) {
@@ -191,9 +195,6 @@ int main(int argc, const char *argv[]) {
 	// Wait for our producer thread to finish up
 	pthread_join(producer, NULL);
 
-	printf("End of producer thread, the manufacturer has completed his work for the day.\n");
-
-	printf("Waiting for consumers to buy up the rest (if there are any).\n");
 
 	// Give the consumers a second to finish snatching up items
 	//while (id < max_items)
