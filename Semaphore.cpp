@@ -10,8 +10,8 @@
  *************************************************************************************/
 
 Semaphore::Semaphore(int count) : count (count) {
-    pthread_mutex_init(&mutex, nullptr); // initialize mutex with default attributes
-    pthread_cond_init(&cond, nullptr); // initialize condition variable with default attributes
+    pthread_mutex_init(&mutex, NULL); // initialize mutex with default attributes
+    pthread_cond_init(&cond, NULL); // initialize condition variable with default attributes
 }
 
 
@@ -35,7 +35,7 @@ Semaphore::~Semaphore() {
 void Semaphore::wait() {
     pthread_mutex_lock(&mutex); // lock mutex
     while (count == 0) { // when no resources are available...
-        pthread_cond_wait(&cond, &mutex); //block this thread, releasing mutex until signal
+        pthread_cond_wait(&cond, &mutex); // block this thread, releasing mutex until signal
     }
     --count; // consume one resource
     pthread_mutex_unlock(&mutex); // release mutex

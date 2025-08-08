@@ -43,7 +43,7 @@ void *producer_routine(void *data) {
 	time_t rand_seed; // set random time seed
 	srand((unsigned int) time(&rand_seed)); // get random time number
 
-	// The current Yoda serial number (incremented)
+	// The current Yoda serial number (incremented throughout the loop)
 	int serialnum = 1;
 	
 
@@ -59,7 +59,7 @@ void *producer_routine(void *data) {
 
 		emptySlots->wait(); // wait until the buffer has an empty slot
 
-		// Place item on the next shelf slot by first setting the mutex to protect our buffer vars
+		// Place item on the next shelf slot by first setting the mutex to protect our buffer variables
 		pthread_mutex_lock(&buf_mutex); // lock buffer to place item
 
 		// Capture the values actually placed so the print matches the write
@@ -89,7 +89,7 @@ void *producer_routine(void *data) {
 		for (int i = 0; i < num_consumers; ++i) {
 			emptySlots->wait(); // wait for an empty slot
 			pthread_mutex_lock(&buf_mutex); // lock buffer to place sentinel
-			buffer[head] = -1; //place sentinel in buffer to signal termination
+			buffer[head] = -1; // place sentinel in buffer to signal no more Yodas
 			head = (head + 1) % buffer_size; // advance head by one
 			pthread_mutex_unlock(&buf_mutex); // unlock buffer
 			fullSlots->signal(); // signal sentinel availability
@@ -195,11 +195,7 @@ int main(int argc, const char *argv[]) {
 	// Wait for our producer thread to finish up
 	pthread_join(producer, NULL);
 
-
-	// Give the consumers a second to finish snatching up items
-	//while (id < max_items)
-	//	sleep(1);
-
+	// Wait for all consumer threads to finish
 	for (int i = 0; i < num_consumers; ++i) {
 		pthread_join(consumer[i], NULL);
 	}
