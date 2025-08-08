@@ -2,35 +2,37 @@
 
 Author: Capt Brandon Stetler, AFIT Master's student
 
-This project created a simple Unix shell that executes a limited subset of commands, including "create", "update", "list", "dir", and "halt". The code can be run by first calling `make clean`, then `make`, and finally `./myshell`. 
+## Overview
+This project implemented semaphores using the pthread mutex primitives, and then converted the single buffer storefront implementation found in babyyoda.cpp into a bounded buffer.
 
-## Commands
-- `create <name>` - Create a new file in the current directory with the given name. If the file already exists, print an error message on the workstation screen.
-- `update <name> <number> <text>` - Append lines of text to the named file. In particular, the text string <text> is appended to the end of the file, <number> times. To simulate a (very) slow device, the update command sleeps for several seconds after appending each line.
-- `list <name>` - Display the contents of the named file on the workstation screen. If the file does not exist, print an error message on the workstation screen and terminate the command.
-- `dir` - List the names of all files in the current directory. Note that since there is no command to change to a new directory, the current directory is the only directory.
-- `halt` - Terminate the shell.
+The problem is that there is one really busy toy store owner (producer thread), a storefront with N shelf locations, and a bunch of independent parents wanting to buy the latest Baby Yoda animatronic doll (consumer threads). The owner creates Baby Yoda dolls, numbered sequentially from 1 on up, out of the thin air and places each on one of the N locations in the storefront. The consumers snatch these items as soon as they are placed on the shelf (but no sooner) and announce to the world the serial number of the item they purchased.
 
-##
-Like UNIX, the shell executes commands in the foreground by default. This means that it waits for the command to finish before prompting the user for another command. However, also like UNIX, the shell allows the user to specify that the command is to be executed in the background by placing an ampersand (i.e., &) at the end of the command line. In this case the shell immediately prompts the user for another command without waiting for the current command to complete execution.
+To do this, the project implemented a `semaphore` class with `wait()` and `signal()` using `pthread_mutex_t` and `pthread_cond_t`.
 
-## Sample Input
-- `dir`
-- `create file1`
-- `dir`
-- `update file1 3 “this is a line”`
-- `list file1`
-- `update file1 2 “this is another line”`
-- `list file1`
-- `create file2`
-- `update file2 10 “this is the first 10 lines” &`
-- `list file2`
-- `create file3`
-- `dir`
-- `list file2`
-- `update file3 10 “first update” &`
-- `update file3 12 “second update”`
-- `list file3`
-- `list file4`
-- `dir`
-- `halt`
+## Repository Link 
+https://github.com/Brandon-Stetler/CSCE_489_Project2_Stetler
+
+## Build Instructions
+```bash
+make clean
+make
+```
+
+## Usage
+```bash
+./babyyoda <buffersize> <num_consumers> <max_items>
+```
+- `buffersize`: The maximum number of items the store can hold
+- `num_consumers`: Number of consumer threads
+- `max_items`: The number of Baby Yoda dolls the producer should create before exiting
+
+Example:
+```bash
+./babyyoda 5 15 10
+```
+
+## Project Files
+- `Semaphore.h` & `Semaphore.cpp`: Semaphore implementation using pthreads
+- `babyyoda.cpp`: Main simulation demonstrating bounded buffer of Yoda dolls with multiple consumers
+- `Makefile`: Build instructions
+- `README.md`: This file
